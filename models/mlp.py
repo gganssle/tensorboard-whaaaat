@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/env python3
 
 '''
 This is a simple MLP script to test out the TensorBoard graph properties,
@@ -53,7 +53,7 @@ mod = model(inp, w1, w2, w3, w4)
 
 # build loss function
 with tf.name_scope('loss'):
-	loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(mod, otp))
+	loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=mod, labels=otp))
 	train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(loss)
 	tf.summary.scalar('loss', loss)
 
@@ -74,7 +74,10 @@ with tf.Session() as sess:
 	# train
 	for i in range(10):
 		sess.run(train_op, feed_dict={inp: train_dat, otp: train_lbl})
+
 		summary, acc = sess.run([merged, val_op],
 			feed_dict={inp: test_dat, otp: test_lbl})
 		writer.add_summary(summary, i)
+
 		print(i, acc)
+		#print(tf.Tensor.eval(w1))
