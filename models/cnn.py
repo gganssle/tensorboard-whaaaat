@@ -4,7 +4,6 @@ import numpy as np
 import tensorflow as tf
 
 # Load training and eval data
-'''
 mnist = tf.contrib.learn.datasets.load_dataset("mnist")
 train_data = mnist.train.images  # Returns np.array
 train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
@@ -13,7 +12,10 @@ eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
 
 print(train_labels.shape) # (55000,)
 print(train_data.shape) # (55000, 784)
-'''
+
+# placeholders
+data = tf.placeholder('float', [None, 784], name='data')
+labels = tf.placeholder('float', [None, 1], name='data')
 
 def model(data):
 	with tf.name_scope('input'):
@@ -33,12 +35,25 @@ def model(data):
 	with tf.name_scope('flatten'):
 		flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
 	with tf.name_scope('dense'):
-		dense = tf.layers.dense(inputs=pool2_flat, 
+		dense = tf.layers.dense(inputs=flat, 
 			units=1024, activation=tf.nn.relu)
 	with tf.name_scope('output'):
 		output = tf.layers.dense(inputs=dense, units=10)
 
-with tf.Session() as sess:
-	writer = tf.summary.FileWriter('./logs/cnn', sess.graph)
+mod = model(data)
 
-	tf.global_variables_initializer().run()
+# build loss function
+with tf.name_scope('loss'):
+	loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=mod, labels=labels))
+	train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(loss)
+	tf.summary.scalar('loss', loss)
+
+# validate
+with tf.name_scope('validation'):
+	correct = tf.equal(tf.argmax(labels, 1), tf.argmax(mod, 1))
+	val_op  = tf.reduce_mean(tf.cast(correct, 'float'))
+	tf.summary.scalar('accuracy', val_op)
+
+# run it
+with tf.Session() as sess:
+	
