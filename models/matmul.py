@@ -9,9 +9,10 @@ d2 = np.random.rand(3,3)
 one = tf.placeholder('float', [3,3], name='one')
 two = tf.placeholder('float', [3,3], name='two')
 
-with tf.name_scope('multipliy'):
-	mul_op = tf.matmul(one, two, name='mult')
-	tf.summary.scalar('thing', mul_op)
+with tf.name_scope('multiply'):
+	mul_op = tf.matmul(one, two, name='mult')	
+	tf.summary.scalar('thing', tf.reduce_max(mul_op))
+
 
 with tf.Session() as sess:
 	writer = tf.summary.FileWriter('./logs/matmul', sess.graph)
@@ -19,6 +20,8 @@ with tf.Session() as sess:
 
 	tf.global_variables_initializer().run()
 
-	sess.run(mul_op, feed_dict={one: d1, two: d2})
-	#summary = sess.run([merged, mul_op], feed_dict={one: d1, two: d2})
-	writer.add_summary(summary)
+	for i in range(10):
+		summary, mul = sess.run([merged, mul_op], feed_dict={one: d1, two: d2})
+		writer.add_summary(summary, i)
+
+		print(sess.run(tf.reduce_max(mul)), '\n', mul)
