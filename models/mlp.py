@@ -15,12 +15,12 @@ dat = df.as_matrix()
 df = pd.read_csv('../dat/mushroom_labels.csv')
 lbl = df.as_matrix()
 
-training_samples = 8000
-
 train_dat = dat[:8000,:]
 train_lbl = lbl[:8000,:]
 test_dat  = dat[8001:,:]
 test_lbl  = lbl[8001:,:]
+
+print(train_lbl)
 
 # placeholders for I/O
 inp = tf.placeholder('float', [None, 117], name='inp')

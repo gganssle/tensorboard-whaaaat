@@ -14,6 +14,7 @@ with tf.name_scope('multiply'):
 	tf.summary.scalar('thing', tf.reduce_max(mul_op))
 
 tf.summary.histogram('d1_summ', d1)
+
 img = np.expand_dims(np.expand_dims(d1, axis=0), axis=0)
 print(img)
 tf.summary.image('d1_image', img)
