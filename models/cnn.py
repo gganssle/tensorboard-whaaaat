@@ -17,11 +17,11 @@ eval_labels = np.zeros((eval_labels_temp.shape[0], 10))
 eval_labels[np.arange(eval_labels_temp.shape[0]), eval_labels_temp] = 1
 
 ################# subset ################################################################
-tempsize = 1000			   ######################################################
-train_data = train_data[:tempsize]       ######################################################
-train_labels = train_labels[:tempsize]   ######################################################
-eval_data = eval_data[:tempsize]         ######################################################
-eval_labels = eval_labels[:tempsize]     ######################################################
+tempsize = 1000			   	 ################################################
+train_data = train_data[:tempsize]       ################################################
+train_labels = train_labels[:tempsize]   ################################################
+eval_data = eval_data[:tempsize]         ################################################
+eval_labels = eval_labels[:tempsize]     ################################################
 #########################################################################################
 
 # placeholders
@@ -45,6 +45,15 @@ tf.summary.histogram('w4_summ', w4)
 
 tf.summary.histogram('b1_summ', b1)
 tf.summary.histogram('b2_summ', b2)
+
+# weight matrix images
+#tf.summary.image('w1_image', img1)
+#tf.summary.image('w2_image', w2)
+#tf.summary.image('w3_image', w3)
+img = np.reshape(w4, [1,1024,10,1])
+print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',img.shape)
+tf.summary.image('w4image', img, max_outputs=1)
+
 
 # build the model
 def model(data,w1,w2,w3,w4,b1,b2):
@@ -99,7 +108,7 @@ with tf.Session() as sess:
 	tf.global_variables_initializer().run()
 
 	# train
-	for i in range(100):
+	for i in range(10):
 		sess.run(train_op, feed_dict={data: train_data, labels: train_labels})
 
 		summary, acc = sess.run([merged, val_op],
