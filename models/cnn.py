@@ -6,23 +6,27 @@ import tensorflow as tf
 # Load training and eval data
 mnist = tf.contrib.learn.datasets.load_dataset("mnist")
 train_data = mnist.train.images  # Returns np.array
-train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
+train_labels_temp = np.asarray(mnist.train.labels, dtype=np.int32)
 eval_data = mnist.test.images  # Returns np.array
-eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+eval_labels_temp = np.asarray(mnist.test.labels, dtype=np.int32)
 
-train_labels = np.expand_dims(train_labels, axis=1)
-eval_labels  = np.expand_dims(train_labels, axis=1)
+train_labels = np.zeros((train_labels_temp.shape[0], 10))
+train_labels[np.arange(train_labels_temp.shape[0]), train_labels_temp] = 1
+
+eval_labels = np.zeros((eval_labels_temp.shape[0], 10))
+eval_labels[np.arange(eval_labels_temp.shape[0]), eval_labels_temp] = 1
 
 ################# subset ################################################################
-train_data = train_data[:10, :]       ###################################################
-train_labels = train_labels[:10,:]    ###################################################
-eval_data = eval_data[:10, :]         ###################################################
-eval_labels = eval_labels[:10, :]     ###################################################
+tempsize = 1000			   ######################################################
+train_data = train_data[:tempsize]       ######################################################
+train_labels = train_labels[:tempsize]   ######################################################
+eval_data = eval_data[:tempsize]         ######################################################
+eval_labels = eval_labels[:tempsize]     ######################################################
 #########################################################################################
 
 # placeholders
 data = tf.placeholder('float', [None, 784], name='data')
-labels = tf.placeholder('float', [None, 1], name='labels')
+labels = tf.placeholder('float', [None, 10], name='labels')
 
 # weight matrices and bias vectors
 w1 = tf.Variable(tf.random_normal([5,5,1,32], stddev=1), name='w1')
@@ -45,22 +49,31 @@ tf.summary.histogram('b2_summ', b2)
 # build the model
 def model(data,w1,w2,w3,w4,b1,b2):
 	with tf.name_scope('input'):
+		print('data', data.shape)
 		layer1 = tf.reshape(data, [-1, 28, 28, 1])
+		print('layer1', layer1.shape)
 	with tf.name_scope('conv_1'):
 		conv1 = tf.nn.conv2d(layer1, filter=w1, strides=[1,1,1,1], padding='SAME')
 		conv1b = tf.nn.relu(conv1 + b1)
-		print(conv1b.shape)
-		pool1 = tf.nn.max_pool(conv1b, ksize=[1,2,2,1], strides=[1,1,1,1], padding='SAME')
+		print('conv1b', conv1b.shape)
+		pool1 = tf.nn.max_pool(conv1b, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
+		print('pool1', pool1.shape)
 	with tf.name_scope('conv_2'):
 		conv2 = tf.nn.conv2d(pool1, filter=w2, strides=[1,1,1,1], padding='SAME')
 		conv2b = tf.nn.relu(conv2 + b2)
-		pool2 = tf.nn.max_pool(conv2b, ksize=[1,2,2,1], strides=[1,1,1,1], padding='SAME')
+		print('conv2b', conv2b.shape)
+		pool2 = tf.nn.max_pool(conv2b, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
+		print('pool2', pool2.shape)
 	with tf.name_scope('flatten'):
 		flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
+		print('flat', flat.shape)
 	with tf.name_scope('dense'):
 		dense1 = tf.nn.relu(tf.matmul(flat, w3))
+		print('dense', dense1.shape)
 	with tf.name_scope('output'):
-		return tf.matmul(dense1, w4)
+		out = tf.matmul(dense1, w4)
+		print('out', out.shape)
+		return out
 
 mod = model(data,w1,w2,w3,w4,b1,b2)
 
@@ -86,7 +99,7 @@ with tf.Session() as sess:
 	tf.global_variables_initializer().run()
 
 	# train
-	for i in range(2):
+	for i in range(100):
 		sess.run(train_op, feed_dict={data: train_data, labels: train_labels})
 
 		summary, acc = sess.run([merged, val_op],
