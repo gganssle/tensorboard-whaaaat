@@ -10,13 +10,15 @@ train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
 eval_data = mnist.test.images  # Returns np.array
 eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
 
-# TODO: this is the part***************************************************************
-#np.expand_dims(train_labels, axis=0)
-np.transpose(train_labels)
+train_labels = np.expand_dims(train_labels, axis=1)
+eval_labels  = np.expand_dims(train_labels, axis=1)
 
-print(train_labels.shape) # (55000,)
-print(train_labels)
-print(train_data.shape) # (55000, 784)
+################# subset ################################################################
+train_data = train_data[:10, :]       ###################################################
+train_labels = train_labels[:10,:]    ###################################################
+eval_data = eval_data[:10, :]         ###################################################
+eval_labels = eval_labels[:10, :]     ###################################################
+#########################################################################################
 
 # placeholders
 data = tf.placeholder('float', [None, 784], name='data')
@@ -47,11 +49,12 @@ def model(data,w1,w2,w3,w4,b1,b2):
 	with tf.name_scope('conv_1'):
 		conv1 = tf.nn.conv2d(layer1, filter=w1, strides=[1,1,1,1], padding='SAME')
 		conv1b = tf.nn.relu(conv1 + b1)
-		pool1 = tf.nn.max_pool(conv1b, ksize=[2,2,1,1], strides=[1,1,1,1], padding='SAME')
+		print(conv1b.shape)
+		pool1 = tf.nn.max_pool(conv1b, ksize=[1,2,2,1], strides=[1,1,1,1], padding='SAME')
 	with tf.name_scope('conv_2'):
 		conv2 = tf.nn.conv2d(pool1, filter=w2, strides=[1,1,1,1], padding='SAME')
 		conv2b = tf.nn.relu(conv2 + b2)
-		pool2 = tf.nn.max_pool(conv2b, ksize=[2,2,1,1], strides=[1,1,1,1], padding='SAME')
+		pool2 = tf.nn.max_pool(conv2b, ksize=[1,2,2,1], strides=[1,1,1,1], padding='SAME')
 	with tf.name_scope('flatten'):
 		flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
 	with tf.name_scope('dense'):
@@ -87,7 +90,7 @@ with tf.Session() as sess:
 		sess.run(train_op, feed_dict={data: train_data, labels: train_labels})
 
 		summary, acc = sess.run([merged, val_op],
-			feed_dict={data: test_data, labels: test_labels})
+			feed_dict={data: eval_data, labels: eval_labels})
 		writer.add_summary(summary, i)
 
 		print(i, acc)
