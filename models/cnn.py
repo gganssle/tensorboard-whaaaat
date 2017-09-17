@@ -10,6 +10,7 @@ train_labels_temp = np.asarray(mnist.train.labels, dtype=np.int32)
 eval_data = mnist.test.images  # Returns np.array
 eval_labels_temp = np.asarray(mnist.test.labels, dtype=np.int32)
 
+# one hot encoding for the labels
 train_labels = np.zeros((train_labels_temp.shape[0], 10))
 train_labels[np.arange(train_labels_temp.shape[0]), train_labels_temp] = 1
 
@@ -47,41 +48,40 @@ tf.summary.histogram('b1_summ', b1)
 tf.summary.histogram('b2_summ', b2)
 
 # weight matrix images
-#tf.summary.image('w1_image', img1)
-#tf.summary.image('w2_image', w2)
-#tf.summary.image('w3_image', w3)
-img = np.reshape(w4, [1,1024,10,1])
-print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',img.shape)
-tf.summary.image('w4image', img, max_outputs=1)
+tf.summary.image('w1_image', tf.transpose(w1, perm=[3,0,1,2]), max_outputs=32)
+img2 = tf.transpose(tf.slice(w2, begin=[0,0,0,0], size=[5,5,1,64]), perm=[3,0,1,2])
+tf.summary.image('w2_image', img2, max_outputs=64)
+tf.summary.image('w3_image', tf.reshape(w3, [1,7*7*64,1024,1]))
+tf.summary.image('w4_image', tf.reshape(w4, [1,1024,10,1]))
 
 
 # build the model
 def model(data,w1,w2,w3,w4,b1,b2):
 	with tf.name_scope('input'):
-		print('data', data.shape)
+		#print('data', data.shape)
 		layer1 = tf.reshape(data, [-1, 28, 28, 1])
-		print('layer1', layer1.shape)
+		#print('layer1', layer1.shape)
 	with tf.name_scope('conv_1'):
 		conv1 = tf.nn.conv2d(layer1, filter=w1, strides=[1,1,1,1], padding='SAME')
 		conv1b = tf.nn.relu(conv1 + b1)
-		print('conv1b', conv1b.shape)
+		#print('conv1b', conv1b.shape)
 		pool1 = tf.nn.max_pool(conv1b, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
-		print('pool1', pool1.shape)
+		#print('pool1', pool1.shape)
 	with tf.name_scope('conv_2'):
 		conv2 = tf.nn.conv2d(pool1, filter=w2, strides=[1,1,1,1], padding='SAME')
 		conv2b = tf.nn.relu(conv2 + b2)
-		print('conv2b', conv2b.shape)
+		#print('conv2b', conv2b.shape)
 		pool2 = tf.nn.max_pool(conv2b, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
-		print('pool2', pool2.shape)
+		#print('pool2', pool2.shape)
 	with tf.name_scope('flatten'):
 		flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
-		print('flat', flat.shape)
+		#print('flat', flat.shape)
 	with tf.name_scope('dense'):
 		dense1 = tf.nn.relu(tf.matmul(flat, w3))
-		print('dense', dense1.shape)
+		#print('dense', dense1.shape)
 	with tf.name_scope('output'):
 		out = tf.matmul(dense1, w4)
-		print('out', out.shape)
+		#print('out', out.shape)
 		return out
 
 mod = model(data,w1,w2,w3,w4,b1,b2)
@@ -108,7 +108,7 @@ with tf.Session() as sess:
 	tf.global_variables_initializer().run()
 
 	# train
-	for i in range(10):
+	for i in range(2):
 		sess.run(train_op, feed_dict={data: train_data, labels: train_labels})
 
 		summary, acc = sess.run([merged, val_op],
