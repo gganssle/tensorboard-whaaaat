@@ -17,13 +17,15 @@ train_labels[np.arange(train_labels_temp.shape[0]), train_labels_temp] = 1
 eval_labels = np.zeros((eval_labels_temp.shape[0], 10))
 eval_labels[np.arange(eval_labels_temp.shape[0]), eval_labels_temp] = 1
 
-################# subset ################################################################
-tempsize = 1000			   	 ################################################
-train_data = train_data[:tempsize]       ################################################
-train_labels = train_labels[:tempsize]   ################################################
-eval_data = eval_data[:tempsize]         ################################################
-eval_labels = eval_labels[:tempsize]     ################################################
-#########################################################################################
+################## subset ################################################################
+#tempsize = 1000		   	  ################################################
+#train_data = train_data[:tempsize]       ################################################
+#train_labels = train_labels[:tempsize]   ################################################
+#eval_data = eval_data[:tempsize]         ################################################
+#eval_labels = eval_labels[:tempsize]     ################################################
+#print(train_data.shape)
+#print(train_labels.shape)
+##########################################################################################
 
 # placeholders
 data = tf.placeholder('float', [None, 784], name='data')
@@ -99,6 +101,8 @@ with tf.name_scope('validation'):
 	tf.summary.scalar('accuracy', val_op)
 
 # run it
+batch_size = 1000
+
 with tf.Session() as sess:
 	# write out log
 	writer = tf.summary.FileWriter('./logs/cnn', sess.graph)
@@ -106,13 +110,18 @@ with tf.Session() as sess:
 
 	# init
 	tf.global_variables_initializer().run()
-
 	# train
-	for i in range(2):
-		sess.run(train_op, feed_dict={data: train_data, labels: train_labels})
+	for batch in range(0, 50000, batch_size):
+		print('running batch from sample', batch, 'to sample', batch+batch_size)
 
-		summary, acc = sess.run([merged, val_op],
-			feed_dict={data: eval_data, labels: eval_labels})
-		writer.add_summary(summary, i)
+		batch_data = train_data[batch:batch+batch_size]
+		batch_labels = train_labels[batch:batch+batch_size]
 
-		print(i, acc)
+		for i in range(50):
+			sess.run(train_op, feed_dict={data: batch_data, labels: batch_labels})
+
+			summary, acc = sess.run([merged, val_op],
+				feed_dict={data: eval_data, labels: eval_labels})
+			writer.add_summary(summary, i)
+
+			print(i, acc)
