@@ -17,16 +17,6 @@ train_labels[np.arange(train_labels_temp.shape[0]), train_labels_temp] = 1
 eval_labels = np.zeros((eval_labels_temp.shape[0], 10))
 eval_labels[np.arange(eval_labels_temp.shape[0]), eval_labels_temp] = 1
 
-################## subset ################################################################
-#tempsize = 1000		   	  ################################################
-#train_data = train_data[:tempsize]       ################################################
-#train_labels = train_labels[:tempsize]   ################################################
-#eval_data = eval_data[:tempsize]         ################################################
-#eval_labels = eval_labels[:tempsize]     ################################################
-#print(train_data.shape)
-#print(train_labels.shape)
-##########################################################################################
-
 # placeholders
 data = tf.placeholder('float', [None, 784], name='data')
 labels = tf.placeholder('float', [None, 10], name='labels')
@@ -111,13 +101,13 @@ with tf.Session() as sess:
 	# init
 	tf.global_variables_initializer().run()
 	# train
-	for batch in range(0, 50000, batch_size):
+	for batch in range(0, 2000, batch_size):
 		print('running batch from sample', batch, 'to sample', batch+batch_size)
 
 		batch_data = train_data[batch:batch+batch_size]
 		batch_labels = train_labels[batch:batch+batch_size]
 
-		for i in range(50):
+		for i in range(2):
 			sess.run(train_op, feed_dict={data: batch_data, labels: batch_labels})
 
 			summary, acc = sess.run([merged, val_op],
