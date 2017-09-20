@@ -107,7 +107,7 @@ with tf.Session() as sess:
 		batch_data = train_data[batch:batch+batch_size]
 		batch_labels = train_labels[batch:batch+batch_size]
 
-		for i in range(2):
+		for i in range(50):
 			sess.run(train_op, feed_dict={data: batch_data, labels: batch_labels})
 
 			summary, acc = sess.run([merged, val_op],
