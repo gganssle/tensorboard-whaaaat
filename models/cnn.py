@@ -92,6 +92,7 @@ with tf.name_scope('validation'):
 
 # run it
 batch_size = 1000
+epochs = 10
 
 with tf.Session() as sess:
 	# write out log
@@ -101,17 +102,17 @@ with tf.Session() as sess:
 	# init
 	tf.global_variables_initializer().run()
 	# train
-	for batch in range(0, 2000, batch_size):
+	for batch in range(0, 3000, batch_size):
 		print('running batch from sample', batch, 'to sample', batch+batch_size)
 
 		batch_data = train_data[batch:batch+batch_size]
 		batch_labels = train_labels[batch:batch+batch_size]
 
-		for i in range(50):
+		for i in range(1, epochs):
 			sess.run(train_op, feed_dict={data: batch_data, labels: batch_labels})
 
 			summary, acc = sess.run([merged, val_op],
 				feed_dict={data: eval_data, labels: eval_labels})
-			writer.add_summary(summary, i)
+			writer.add_summary(summary, i + (epochs - 1) * (batch/batch_size))
 
-			print(i, acc)
+			print(i + (epochs - 1) * (batch/batch_size), acc)
